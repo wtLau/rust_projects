@@ -10,7 +10,9 @@ fn main() {
     x = 6;
     println!("The value of x is: {x}");
 
-    numeric_operations()
+    numeric_operations();
+
+    tuples();
 }
 
 fn numeric_operations() {
@@ -34,5 +36,17 @@ fn numeric_operations() {
 
     // remainder
     let remainder = 43 % 5;
-    println!("The value of remainder is: {remainder}");
+    println!("The value of remainder is: {remainder}\n");
+}
+
+fn tuples() {
+    println!("Tuples:");
+    let tup: (i32, f64, u8) = (500, 6.4, 1);
+
+    let (x, _, _) = tup;
+
+    println!("The value of x in {:?} is: {x}", tup);
+
+    let five = tup.0;
+    println!("The value of first index in {:?} is: {five}", tup);
 }
