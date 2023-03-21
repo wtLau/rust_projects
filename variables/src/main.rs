@@ -13,6 +13,8 @@ fn main() {
     numeric_operations();
 
     tuples();
+
+    array()
 }
 
 fn numeric_operations() {
@@ -49,4 +51,31 @@ fn tuples() {
 
     let five = tup.0;
     println!("The value of first index in {:?} is: {five}", tup);
+    println!("\n")
+}
+
+use std::io;
+
+fn array() {
+    // Run time error
+    println!("Array:");
+    let a = [1, 2, 3, 4, 5];
+
+    println!("Please enter an array index.");
+
+    let mut index = String::new();
+
+    io::stdin()
+        .read_line(&mut index)
+        .expect("Failed to read line");
+
+    let index: usize = index
+        .trim()
+        .parse()
+        .expect("Index entered was not a number");
+
+    let element = a[index];
+
+    println!("The value of the element at index {index} is: {element}");
+    println!("\n")
 }
