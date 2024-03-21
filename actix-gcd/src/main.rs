@@ -25,3 +25,10 @@ async fn get_index() -> HttpResponse {
             "#,
     )
 }
+
+use serde::Deserialize;
+#[derive(Deserialize)]
+struct GcdParameters {
+    n: u64,
+    m: u64,
+}
