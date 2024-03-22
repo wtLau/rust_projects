@@ -9,7 +9,18 @@ fn complex_square_add_loop(c: Complex<f64>) {
     }
 }
 
-use std::{str::FromStr, usize};
+fn escape_time(c: Complex<f64>, limit: usize) -> Option<usize> {
+    let mut z = Complex { re: 0.0, im: 0.0 };
+    for i in 0..limit {
+        if z.norm_sqr() > 4.0 {
+            return Some(i);
+        }
+        z = z * z + c;
+    }
+    None
+}
+
+use std::{f64, str::FromStr, usize};
 
 fn parse_pair<T: FromStr>(s: &str, seperator: char) -> Option<(T, T)> {
     match s.find(seperator) {
@@ -85,4 +96,26 @@ fn test_pixel_to_point() {
             im: -0.75
         }
     )
+}
+
+// Plotting the Set
+fn render(
+    pixels: &mut [u8],
+    bounds: (usize, usize),
+    upper_left: Complex<f64>,
+    lower_right: Complex<f64>,
+) {
+    assert!(pixels.len() == bounds.0 * bounds.1);
+
+    for row in 0..bounds.1 {
+        for column in 0..bounds.0 {
+            let point = pixel_to_point(bounds, (column, row), upper_left, lower_right);
+            // if escape_time says that point belongs to the set, render colors black.
+            // Otherwise, assigns darket color to the numb that took longer to escape
+            pixels[row * bounds.0 + column] = match escape_time(point, 255) {
+                None => 0,
+                Some(count) => 255 - count as u8,
+            };
+        }
+    }
 }
