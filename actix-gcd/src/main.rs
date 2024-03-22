@@ -2,7 +2,11 @@ use actix_web::{web, App, HttpResponse, HttpServer};
 
 #[actix_web::main]
 async fn main() {
-    let app = || App::new().route("/", web::get().to(get_index));
+    let app = || {
+        App::new()
+            .route("/", web::get().to(get_index))
+            .route("/gcd", web::post().to(post_gcd))
+    };
 
     let server = HttpServer::new(app)
         .bind("127.0.0.1:8080")
@@ -35,7 +39,7 @@ struct GcdParameters {
 
 mod gcd_module;
 use gcd_module::gcd_module::gcd;
-fn post_gcd(form: web::Form<GcdParameters>) -> HttpResponse {
+async fn post_gcd(form: web::Form<GcdParameters>) -> HttpResponse {
     if form.m == 0 || form.n == 0 {
         return HttpResponse::BadRequest()
             .content_type("text/html")
@@ -48,4 +52,6 @@ fn post_gcd(form: web::Form<GcdParameters>) -> HttpResponse {
         form.m,
         gcd(form.n, form.m)
     );
+
+    HttpResponse::Ok().content_type("text/html").body(response)
 }
