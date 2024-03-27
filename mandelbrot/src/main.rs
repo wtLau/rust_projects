@@ -1,3 +1,4 @@
+use image::{png::PNGEncoder, ColorType};
 use num::Complex;
 
 fn main() {}
@@ -20,7 +21,7 @@ fn escape_time(c: Complex<f64>, limit: usize) -> Option<usize> {
     None
 }
 
-use std::{f64, str::FromStr, usize};
+use std::{f64, fs::File, str::FromStr, usize};
 
 fn parse_pair<T: FromStr>(s: &str, seperator: char) -> Option<(T, T)> {
     match s.find(seperator) {
@@ -118,4 +119,25 @@ fn render(
             };
         }
     }
+}
+
+// Write to an Image file
+fn write_image(
+    filename: &str,
+    pixels: &[u8],
+    bounds: (usize, usize),
+) -> Result<(), std::io::Error> {
+    let output = match File::create(filename) {
+        Ok(f) => f,
+        Err(e) => {
+            return Err(e);
+        }
+    };
+
+    let encoder = PNGEncoder::new(output);
+    // encoding the pixel data from pixels, 8 bit grayscale value
+    encoder.encode(pixels, bounds.0 as u32, bounds.1 as u32, ColorType::Gray(8))?;
+
+    // it has no return value
+    Ok(())
 }
