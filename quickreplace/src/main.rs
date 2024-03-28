@@ -25,8 +25,18 @@ fn main() {
             std::process::exit(1);
         }
     };
+
+    // performing replace words with match
+    let replaced_data = match replace(&args.target, &args.replacement, &data) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("{} failed to replace text: {:?}", "Error:".red().bold(), e);
+            std::process::exit(1);
+        }
+    };
+
     // perform a write to a new file from arg.output with the data referenced above
-    match fs::write(&args.output, &data) {
+    match fs::write(&args.output, &replaced_data) {
         Ok(_) => {}
         Err(e) => {
             eprintln!(
@@ -73,4 +83,17 @@ fn parse_args() -> Arguments {
         filename: args[2].clone(),
         output: args[3].clone(),
     }
+}
+
+// Find and Replace
+use regex::Regex;
+
+fn replace(target: &str, replacement: &str, text: &str) -> Result<String, regex::Error> {
+    // error type is provided by regex crate
+    let regex = Regex::new(target)?;
+
+    // replace_all return a pointer to the orignal text on fail, to avoid extra mem allocation and
+    // copying
+    // since we want a copy, so to_string is used to geta string no matter what
+    Ok(regex.replace_all(text, replacement).to_string())
 }
