@@ -6,9 +6,38 @@ struct Arguments {
     output: String,
 }
 
+use std::fs;
 fn main() {
     let args = parse_args();
     println!("{:?}", args);
+
+    // perform a read operation on a file and store it as data
+    let data = match fs::read_to_string(&args.filename) {
+        Ok(v) => v,
+        Err(e) => {
+            // on error, it will display error messages otherwise it will just fail
+            eprintln!(
+                "{} failed to read from file '{}': {:?}",
+                "Error:".red().bold(),
+                args.filename,
+                e
+            );
+            std::process::exit(1);
+        }
+    };
+    // perform a write to a new file from arg.output with the data referenced above
+    match fs::write(&args.output, &data) {
+        Ok(_) => {}
+        Err(e) => {
+            eprintln!(
+                "{} failed to write to file '{}': {:?}",
+                "Error:".red().bold(),
+                args.filename,
+                e
+            );
+            std::process::exit(1);
+        }
+    };
 }
 
 use text_colorizer::*;
