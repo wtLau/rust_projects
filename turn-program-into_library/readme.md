@@ -15,4 +15,9 @@ Ofc, you can always make the program in its own isolated project, by listing the
 
 `cargo build`
 
-`cargo run --bin efern`
+## Documentation
+
+`cargo doc --no-deps --open`
+
+`--no-deps` == only generate doucment for the crate itself, not all the dependency
+`--open` == open the doc in browser afterward
