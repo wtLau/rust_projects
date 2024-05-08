@@ -1,5 +1,6 @@
 use image::{png::PNGEncoder, ColorType};
 use num::Complex;
+use rayon::prelude::*;
 use std::env;
 
 fn main() {
@@ -21,28 +22,28 @@ fn main() {
     // creating a rectangle array inital to 0 and length of bounds
     let mut pixels = vec![0; bounds.0 * bounds.1];
 
-    // Multi Thread Method - Cocurrent
-    let threads = 8;
-    let rows_per_band = bounds.1 / threads + 1;
-
+    // Scope of slicing up 'pixels' into horizontal band
     {
-        let bands: Vec<&mut [u8]> = pixels.chunks_mut(rows_per_band * bounds.0).collect();
-        crossbeam::scope(|spawner| {
-            for (i, band) in bands.into_iter().enumerate() {
-                let top = rows_per_band * i;
-                let height = band.len() / bounds.0;
-                let band_bounds = (bounds.0, height);
-                let band_upper_left = pixel_to_point(bounds, (0, top), upper_left, lower_right);
-                let band_lower_right =
-                    pixel_to_point(bounds, (bounds.0, top + height), upper_left, lower_right);
+        // Create a collection of tasks passing to Rayon
+        // chunks_mut method to break the image buffer into rows
+        // enumerate to attach a row number to each row
+        // collect to slurp all number slice pairs into a vector
+        let bands: Vec<(usize, &mut [u8])> = pixels.chunks_mut(bounds.0).enumerate().collect();
 
-                spawner.spawn(move |_| {
-                    render(band, band_bounds, band_upper_left, band_lower_right);
-                });
-            }
+        // Turn band into parallel iterator using Rayon
+        // 7.75 core on  8 core machine
+        // 75% faster
+        bands.into_par_iter().for_each(|(i, band)| {
+            let top = i;
+            let band_bounds = (bounds.0, 1);
+            let band_upper_left = pixel_to_point(bounds, (0, top), upper_left, lower_right);
+            let band_lower_right =
+                pixel_to_point(bounds, (bounds.0, top + 1), upper_left, lower_right);
+
+            render(band, band_bounds, band_upper_left, band_lower_right);
         })
-        .unwrap();
     }
+
     // Single Thread Method
     // render(&mut pixels, bounds, upper_left, lower_right);
 
