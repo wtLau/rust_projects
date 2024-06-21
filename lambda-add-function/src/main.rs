@@ -1,30 +1,41 @@
-use lambda_http::{run, service_fn, tracing, Body, Error, Request, RequestExt, Response};
+use lambda_runtime::{run, service_fn, tracing, Error, LambdaEvent};
+use serde::{Deserialize, Serialize};
 
-/// This is the main body for the function.
-/// Write your code inside it.
-/// There are some code example in the following URLs:
-/// - https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples
-async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
-    // Extract some useful information from the request
-    let who = event
-        .query_string_parameters_ref()
-        .and_then(|params| params.first("name"))
-        .unwrap_or("world");
-    let message = format!("Hello {who}, this is an AWS Lambda HTTP request");
+#[derive(Deserialize)]
+struct Request {
+    x: i32,
+    y: i32,
+}
 
-    // Return something that implements IntoResponse.
-    // It will be serialized to the right response event automatically by the runtime
-    let resp = Response::builder()
-        .status(200)
-        .header("content-type", "text/html")
-        .body(message.into())
-        .map_err(Box::new)?;
+#[derive(Serialize)]
+struct Response {
+    total: i32,
+}
+
+async fn function_handler(event: LambdaEvent<Request>) -> Result<Response, Error> {
+    // Extract numbers from the event
+    let x = event.payload.x;
+    let y = event.payload.y;
+
+    // Add the numbers
+    let total = x + y;
+
+    // Prep the resp
+    let resp = Response { total };
+
+    // Return rpose, serialized to json in runtime
     Ok(resp)
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    tracing::init_default_subscriber();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        // disable printing the name of the mdule in every log line
+        .with_target(false)
+        // disable time. Its handy because CloudWatch will add the ingestion time
+        .without_time()
+        .init();
 
     run(service_fn(function_handler)).await
 }
