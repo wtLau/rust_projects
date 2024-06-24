@@ -28,7 +28,7 @@ build:
 	cargo lambda build --release --arm64
 
 deploy:
-	cargo lambda deploy --region us-west-2
+	cargo lambda deploy --enable-function-url --region us-west-2
 
 ### Invoke on AWS
 aws-invoke:
